@@ -30,7 +30,10 @@ async function dispose() {
 
 async function evaluateOnPage(url, func, timeout, ...args) {
     const currentBrowser = browser || await puppeteer.launch();
+    
     const page = await currentBrowser.newPage();
+    page.setDefaultNavigationTimeout(0);
+    page.setDefaultTimeout(0);
     await page.goto(url, { timeout, waitUntil: "domcontentloaded" });
 
     const result = await page.evaluate(func, ...args);
