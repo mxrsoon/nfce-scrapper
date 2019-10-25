@@ -1,28 +1,8 @@
 const puppeteer = require("puppeteer");
+const scrappers = require("./scrappers");
+const helpers = require("./helpers");
+
 let browser;
-
-function getData() {
-    function parseAmount(str) {
-        return parseFloat(str.replace(/,/g, "."));
-    }
-
-    const items = Array.prototype.map.call(document.getElementById("tabResult").tBodies[0].children, (item) => {
-        return {
-            item: item.querySelector(".txtTit").textContent,
-            quantity: parseAmount(item.querySelector(".Rqtd").childNodes[2].textContent),
-            unit: item.querySelector(".RUN").childNodes[2].textContent,
-            unitaryPrice: parseAmount(item.querySelector(".RvlUnit").childNodes[2].textContent),
-            price: parseAmount(item.querySelector(".txtTit > .valor").textContent)
-        };
-    });
-
-    const total = parseFloat(document.querySelector("#totalNota .totalNumb.txtMax").textContent.replace(/,/g, "."));
-
-    return {
-        items,
-        total
-    };
-}
 
 async function init(options) {
     if (!browser || !browser.isConnected()) {
@@ -31,11 +11,29 @@ async function init(options) {
 }
 
 async function scrap(url, timeout = 0) {
+    url = url instanceof URL ? url : new URL(url);
+    const site = `${url.origin}${url.pathname}`;
+
+    if (site in scrappers.sites) {
+        return await evaluateOnPage(url, scrappers.sites[site], timeout, helpers.loader);
+    } else {
+        throw new Error("Unknown site (not supported)");
+    }
+}
+
+async function dispose() {
+    if (browser && browser.isConnected()) {
+        await browser.close();
+        browser = undefined;
+    }
+}
+
+async function evaluateOnPage(url, func, timeout, ...args) {
     const currentBrowser = browser || await puppeteer.launch();
     const page = await currentBrowser.newPage();
     await page.goto(url, { timeout, waitUntil: "domcontentloaded" });
 
-    const result = await page.evaluate(getData);
+    const result = await page.evaluate(func, ...args);
     await page.close();
 
     if (currentBrowser !== browser) {
@@ -45,11 +43,16 @@ async function scrap(url, timeout = 0) {
     return result;
 }
 
-async function dispose() {
-    if (browser && browser.isConnected()) {
-        await browser.close();
-        browser = undefined;
-    }
+async function main() {
+    const startTime = Date.now();
+    console.log(await scrap(process.argv[2]));
+    console.log(`\nSpent ${Date.now() - startTime}ms scrapping.`);
+    console.warn("Still running. Please, manually close.")
+    process.stdin.resume();
+}
+
+if (!module || !module.parent) {
+    return main();
 }
 
 module.exports = {
