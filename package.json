@@ -1,6 +1,6 @@
 {
   "name": "nfce-scrapper",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/wazybr/nfce-scrapper#readme",
   "dependencies": {
-    "puppeteer": "^2.0.0"
+    "puppeteer-core": "^1.11.0"
   }
 }
