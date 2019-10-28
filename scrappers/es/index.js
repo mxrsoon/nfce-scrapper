@@ -13,7 +13,7 @@ function scrap(helpersLoader) {
 
     output.items = Array.prototype.map.call(document.getElementById("tabResult").tBodies[0].children, (item) => {
         return {
-            item: item.querySelector(".txtTit").textContent.trim(),
+            name: item.querySelector(".txtTit").textContent.trim(),
             quantity: helpers.parseAmount(item.querySelector(".Rqtd").childNodes[2].textContent),
             unit: item.querySelector(".RUN").childNodes[2].textContent.trim(),
             unitCost: helpers.parseAmount(item.querySelector(".RvlUnit").childNodes[2].textContent),
